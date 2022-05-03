@@ -2,9 +2,6 @@
 const express = require("express");
 const fs = require("fs");
 
-// Require data from data.json
-const recipeData = require("./data");
-
 // Data path
 const recipeJSONPath = "./data.json"
 
@@ -49,9 +46,9 @@ app.get("/recipes", (req, res) => {
 // Get ingredients + num of steps of certain recipe
 app.get("/recipes/details/:id", (req, res) => {
     try {
-        const foundRecipe = jsonData.recipes.filter(obj => obj.name == req.params.id);
-        const ingredients = foundRecipe[0].ingredients;
-        const numOfSteps = foundRecipe[0].instructions.length;
+        const foundRecipe = jsonData.recipes.find(obj => obj.name === req.params.id);
+        const ingredients = foundRecipe.ingredients;
+        const numOfSteps = foundRecipe.instructions.length;
         const objResponse = {
             "details": {
                 ingredients,
@@ -67,7 +64,7 @@ app.get("/recipes/details/:id", (req, res) => {
 // Post/create route
 app.post("/recipes", (req, res) => {
     try {
-        const filteredData = recipeData.recipes.filter(recipe => recipe.name === req.body.name);
+        const filteredData = jsonData.recipes.filter(recipe => recipe.name === req.body.name);
         if (filteredData.length > 0) {
             const recipeExistsError = {
                 "error": "Recipe already exists"
@@ -78,7 +75,30 @@ app.post("/recipes", (req, res) => {
             jsonData.recipes.push(req.body);
             const stringifyData = JSON.stringify(jsonData);
             fs.writeFileSync(recipeJSONPath, stringifyData);
-            res.json(recipeData);
+            res.status(201);
+            res.json(jsonData);
+        }
+    } catch (error) {
+        res.send(error);
+    }
+});
+
+// Update route (with id)
+app.put("/recipes", (req, res) => {
+    try {
+        const foundRecipe = jsonData.recipes.find(obj => obj.name === req.body.name);
+        if (!foundRecipe) {
+            const notFoundError = {
+                "error": "Recipe does not exist"
+            }
+            res.status(404);
+            res.json(notFoundError);
+        } else {
+            const index = jsonData.recipes.indexOf(foundRecipe);
+            jsonData.recipes.splice(index, 1, req.body);
+            const stringifyData = JSON.stringify(jsonData);
+            fs.writeFileSync(recipeJSONPath, stringifyData);
+            res.status(204);
         }
     } catch (error) {
         res.send(error);
