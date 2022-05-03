@@ -2,6 +2,9 @@
 const express = require("express");
 const methodOverride = require("method-override");
 
+// Require data from data.json
+const recipeData = require("./data");
+
 // Initialize Express application
 const app = express();
 
@@ -17,8 +20,15 @@ const PORT = process.env.PORT;
 app.use(methodOverride("_method"));
 
 // Define routes
+
+// Main index route
 app.get("/", (req, res) => {
-    res.send("Hello World!");
+    res.send("Recipe API");
+});
+
+// Get all recipes
+app.get("/recipes", (req, res) => {
+    res.send(recipeData);
 });
 
 // Tell Express app to listen for client requests
