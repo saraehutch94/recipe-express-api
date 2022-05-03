@@ -26,9 +26,35 @@ app.get("/", (req, res) => {
     res.send("Recipe API");
 });
 
-// Get all recipes
+// Get all recipe names
 app.get("/recipes", (req, res) => {
-    res.send(recipeData);
+    try {
+        const recipeNames = recipeData.recipes.map(obj => obj.name);
+        const objRecipeNames = {
+            "recipeNames": recipeNames,
+        };
+        res.json(objRecipeNames);
+    } catch (error) {
+        res.json(error)
+    }
+});
+
+// Get ingredients + num of steps of certain recipe
+app.get("/recipes/details/:id", (req, res) => {
+    try {
+        const foundRecipe = recipeData.recipes.filter(obj => obj.name == req.params.id);
+        const ingredients = foundRecipe[0].ingredients;
+        const numOfSteps = foundRecipe[0].instructions.length;
+        const objResponse = {
+            "details": {
+                ingredients,
+                numOfSteps,
+            }
+        };
+        res.json(objResponse);
+    } catch (error) {
+        res.json({})
+    }
 });
 
 // Tell Express app to listen for client requests
